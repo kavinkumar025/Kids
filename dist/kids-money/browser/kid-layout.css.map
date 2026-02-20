@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["kid-layout.ts"],
+  "sourcesContent": ["\n    .kid-nav-item { color: var(--fg-muted); }\n    .kid-nav-item:hover { color: var(--fg); background-color: var(--muted); }\n    .kid-active { background-color: var(--color-primary) !important; color: white !important; }\n    .kid-active :is(svg, span) { filter: brightness(10); }\n    .kid-mob-active { color: var(--color-primary) !important; }\n  "],
+  "mappings": ";AACI,CAAA;AAAgB,SAAA,IAAA;AAAwB;AACxC,CADA,YACA;AAAsB,SAAA,IAAA;AAAkB,oBAAA,IAAA;AAAgC;AACxE,CAAA;AAAc,oBAAA,IAAA;AAAmD,SAAA;AAAyB;AAC1F,CADA,WACA,IAAA,KAAA;AAA6B,UAAA,WAAA;AAAwB;AACrD,CAAA;AAAkB,SAAA,IAAA;AAAwC;",
+  "names": []
+}

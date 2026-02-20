@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/services/theme.service.ts"],
+  "sourcesContent": ["import { Injectable, signal, effect } from '@angular/core';\n\n@Injectable({ providedIn: 'root' })\nexport class ThemeService {\n  theme = signal<'light' | 'dark'>(this.getStoredTheme());\n\n  constructor() {\n    effect(() => {\n      const t = this.theme();\n      document.documentElement.classList.remove('light', 'dark');\n      document.documentElement.classList.add(t);\n      localStorage.setItem('km_theme', t);\n    });\n  }\n\n  private getStoredTheme(): 'light' | 'dark' {\n    return (localStorage.getItem('km_theme') as 'light' | 'dark') || 'light';\n  }\n\n  toggle() {\n    this.theme.update(t => t === 'light' ? 'dark' : 'light');\n  }\n}\n"],
+  "mappings": ";;;;;;;;;AAGM,IAAO,eAAP,MAAO,cAAY;EACvB,QAAQ,OAAyB,KAAK,eAAc,GAAE,GAAA,YAAA,CAAA,EAAA,WAAA,QAAA,CAAA,IAAA,CAAA,CAAA;EAEtD,cAAA;AACE,WAAO,MAAK;AACV,YAAM,IAAI,KAAK,MAAK;AACpB,eAAS,gBAAgB,UAAU,OAAO,SAAS,MAAM;AACzD,eAAS,gBAAgB,UAAU,IAAI,CAAC;AACxC,mBAAa,QAAQ,YAAY,CAAC;IACpC,CAAC;EACH;EAEQ,iBAAc;AACpB,WAAQ,aAAa,QAAQ,UAAU,KAA0B;EACnE;EAEA,SAAM;AACJ,SAAK,MAAM,OAAO,OAAK,MAAM,UAAU,SAAS,OAAO;EACzD;;qCAlBW,eAAY;EAAA;4EAAZ,eAAY,SAAZ,cAAY,WAAA,YADC,OAAM,CAAA;;;sEACnB,cAAY,CAAA;UADxB;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
+  "names": []
+}

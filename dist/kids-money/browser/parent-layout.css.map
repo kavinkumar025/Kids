@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["parent-layout.ts"],
+  "sourcesContent": ["\n    .nav-item { color: var(--fg-muted); }\n    .nav-item:hover { color: var(--fg); background-color: var(--muted); }\n    .active-nav { background-color: var(--color-primary) !important; color: white !important; }\n    .active-nav :is(svg, span[innerHTML]) { filter: brightness(10); }\n    .mob-active { color: var(--color-primary) !important; }\n  "],
+  "mappings": ";AACI,CAAA;AAAY,SAAA,IAAA;AAAwB;AACpC,CADA,QACA;AAAkB,SAAA,IAAA;AAAkB,oBAAA,IAAA;AAAgC;AACpE,CAAA;AAAc,oBAAA,IAAA;AAAmD,SAAA;AAAyB;AAC1F,CADA,WACA,IAAA,KAAA,IAAA,CAAA;AAAwC,UAAA,WAAA;AAAwB;AAChE,CAAA;AAAc,SAAA,IAAA;AAAwC;",
+  "names": []
+}
