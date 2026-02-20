@@ -37,3 +37,12 @@ export const publicGuard: CanActivateFn = async () => {
   if (auth.isKid()) { router.navigate(['/kid/dashboard']); return false; }
   return true;
 };
+
+export const adminGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  await waitForAuth(auth);
+  const adminSession = sessionStorage.getItem('km_admin_auth') === '1';
+  if (!auth.isParent() && !adminSession) { router.navigate(['/login'], { queryParams: { admin: '' } }); return false; }
+  return true;
+};

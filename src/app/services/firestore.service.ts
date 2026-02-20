@@ -3,7 +3,7 @@ import {
   Firestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
   query, where, orderBy, limit, addDoc, increment
 } from '@angular/fire/firestore';
-import { Kid, Wallet, Transaction, Task, Goal, SIP, Loan, LearningProgress } from '../models/interfaces';
+import { Kid, Wallet, Transaction, Task, Goal, SIP, Loan, LearningProgress, Testimonial, FaqItem } from '../models/interfaces';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
@@ -368,5 +368,63 @@ export class FirestoreService {
       badges, stats: { tasks_completed: tasksDone, stories_read: storiesDone, goals_achieved: goalsDone, sip_payments: sipPayments, loan_payments: loanPayments },
       level_info: levelInfo, credit_score: kid?.credit_score || 500, xp: kid?.xp || 0
     };
+  }
+
+  // ====== TESTIMONIALS ======
+  async getTestimonials(approvedOnly = false): Promise<Testimonial[]> {
+    const snap = await getDocs(collection(this.fs, 'testimonials'));
+    const all = snap.docs.map(d => d.data() as Testimonial);
+    const filtered = approvedOnly ? all.filter(t => t.approved) : all;
+    return filtered.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  }
+
+  async addTestimonial(data: Omit<Testimonial, 'id' | 'created_at'>): Promise<Testimonial> {
+    const t: Testimonial = { ...data, id: uuidv4(), created_at: new Date().toISOString() };
+    await setDoc(doc(this.fs, 'testimonials', t.id), t);
+    return t;
+  }
+
+  async updateTestimonial(id: string, data: Partial<Testimonial>) {
+    await updateDoc(doc(this.fs, 'testimonials', id), data as any);
+  }
+
+  async deleteTestimonial(id: string) {
+    await deleteDoc(doc(this.fs, 'testimonials', id));
+  }
+
+  async approveTestimonial(id: string) {
+    await updateDoc(doc(this.fs, 'testimonials', id), { approved: true });
+  }
+
+  async rejectTestimonial(id: string) {
+    await updateDoc(doc(this.fs, 'testimonials', id), { approved: false });
+  }
+
+  // ====== FAQS ======
+  async getFaqs(activeOnly = false): Promise<FaqItem[]> {
+    const snap = await getDocs(collection(this.fs, 'faqs'));
+    const all = snap.docs.map(d => d.data() as FaqItem);
+    const filtered = activeOnly ? all.filter(f => f.active) : all;
+    return filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  async addFaq(data: Omit<FaqItem, 'id' | 'created_at'>): Promise<FaqItem> {
+    const f: FaqItem = { ...data, id: uuidv4(), created_at: new Date().toISOString() };
+    await setDoc(doc(this.fs, 'faqs', f.id), f);
+    return f;
+  }
+
+  async updateFaq(id: string, data: Partial<FaqItem>) {
+    await updateDoc(doc(this.fs, 'faqs', id), data as any);
+  }
+
+  async deleteFaq(id: string) {
+    await deleteDoc(doc(this.fs, 'faqs', id));
+  }
+
+  async submitUserReview(data: { name: string; role: string; text: string }): Promise<void> {
+    const avatarColors = ['#3B82F6', '#10B981', '#A855F7', '#F97316', '#EC4899', '#F59E0B'];
+    const bg = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+    await this.addTestimonial({ name: data.name, role: data.role, text: data.text, bg, approved: false, source: 'user' });
   }
 }

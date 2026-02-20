@@ -5,6 +5,7 @@ import { KidLayoutComponent } from '../layouts/kid-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { KID_THEMES, getLevelForXp, getNextLevel } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-kid-home',
@@ -41,33 +42,33 @@ import { KID_THEMES, getLevelForXp, getNextLevel } from '../constants/app-data';
 
           <!-- Quick Stats -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-            <div class="card p-4">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" [style.background-color]="theme().primary + '18'">
-                <svg class="w-4 h-4" [style.color]="theme().primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4" stroke-width="2" stroke-linecap="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2"/></svg>
+            <div class="stat-card">
+              <div class="stat-icon" [style.background-color]="theme().primary + '18'">
+                <svg class="w-5 h-5" [style.color]="theme().primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4" stroke-width="2" stroke-linecap="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2"/></svg>
               </div>
-              <p class="text-xl font-bold font-heading" [style.color]="theme().primary">{{ d.stats.total_tasks_completed }}</p>
-              <p class="text-[10px]" style="color:var(--fg-muted)">Tasks Done</p>
+              <p class="stat-label">Tasks Done</p>
+              <p class="stat-value" [style.color]="theme().primary">{{ d.stats.total_tasks_completed }}</p>
             </div>
-            <div class="card p-4">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" [style.background-color]="theme().secondary + '18'">
-                <svg class="w-4 h-4" [style.color]="theme().secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="stat-card">
+              <div class="stat-icon" [style.background-color]="theme().secondary + '18'">
+                <svg class="w-5 h-5" [style.color]="theme().secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
               </div>
-              <p class="text-xl font-bold font-heading" [style.color]="theme().secondary">{{ d.wallet?.total_earned || 0 }}</p>
-              <p class="text-[10px]" style="color:var(--fg-muted)">Total Earned</p>
+              <p class="stat-label">Total Earned</p>
+              <p class="stat-value" [style.color]="theme().secondary">{{ d.wallet?.total_earned || 0 }}</p>
             </div>
-            <div class="card p-4">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style="background-color:rgba(59,130,246,0.12)">
-                <svg class="w-4 h-4" style="color:#3B82F6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2"/><polyline points="17 21 17 13 7 13 7 21" stroke-width="2"/></svg>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color:rgba(59,130,246,0.12)">
+                <svg class="w-5 h-5" style="color:#3B82F6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2"/><polyline points="17 21 17 13 7 13 7 21" stroke-width="2"/></svg>
               </div>
-              <p class="text-xl font-bold font-heading" style="color:#3B82F6">{{ d.wallet?.total_saved || 0 }}</p>
-              <p class="text-[10px]" style="color:var(--fg-muted)">Total Saved</p>
+              <p class="stat-label">Total Saved</p>
+              <p class="stat-value" style="color:#3B82F6">{{ d.wallet?.total_saved || 0 }}</p>
             </div>
-            <div class="card p-4">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" [style.background-color]="creditColor() + '20'">
-                <svg class="w-4 h-4" [style.color]="creditColor()" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/><circle cx="12" cy="12" r="2" stroke-width="2"/></svg>
+            <div class="stat-card">
+              <div class="stat-icon" [style.background-color]="creditColor() + '20'">
+                <svg class="w-5 h-5" [style.color]="creditColor()" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/><circle cx="12" cy="12" r="2" stroke-width="2"/></svg>
               </div>
-              <p class="text-xl font-bold font-heading" [style.color]="creditColor()">{{ d.kid?.credit_score || 500 }}</p>
-              <p class="text-[10px]" style="color:var(--fg-muted)">Credit Score</p>
+              <p class="stat-label">Credit Score</p>
+              <p class="stat-value" [style.color]="creditColor()">{{ d.kid?.credit_score || 500 }}</p>
             </div>
           </div>
 
@@ -75,9 +76,9 @@ import { KID_THEMES, getLevelForXp, getNextLevel } from '../constants/app-data';
             <!-- Active Tasks -->
             @if (d.active_tasks.length > 0) {
               <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold font-heading">My Tasks</h3>
-                  <a routerLink="/kid/tasks" class="text-xs font-medium" [style.color]="theme().primary">View All →</a>
+                <div class="section-header">
+                  <h3 class="section-title">My Tasks</h3>
+                  <a routerLink="/kid/tasks" class="text-xs font-semibold" [style.color]="theme().primary">View All →</a>
                 </div>
                 <div class="space-y-2">
                   @for (task of d.active_tasks.slice(0, 3); track task.id) {
@@ -102,9 +103,9 @@ import { KID_THEMES, getLevelForXp, getNextLevel } from '../constants/app-data';
             <!-- Recent Activity -->
             @if (d.recent_transactions.length > 0) {
               <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold font-heading">Recent Activity</h3>
-                  <a routerLink="/kid/wallet" class="text-xs font-medium" [style.color]="theme().primary">View All →</a>
+                <div class="section-header">
+                  <h3 class="section-title">Recent Activity</h3>
+                  <a routerLink="/kid/wallet" class="text-xs font-semibold" [style.color]="theme().primary">View All →</a>
                 </div>
                 <div class="space-y-2">
                   @for (txn of d.recent_transactions.slice(0, 5); track txn.id) {
@@ -142,6 +143,7 @@ import { KID_THEMES, getLevelForXp, getNextLevel } from '../constants/app-data';
 export class KidHomePage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   dashboard = signal<any>(null);
 
   theme = computed(() => {
@@ -164,6 +166,9 @@ export class KidHomePage implements OnInit {
 
   async ngOnInit() {
     const kid = this.auth.kidSession()?.kid;
-    if (kid) this.dashboard.set(await this.fs.getKidDashboard(kid.id));
+    if (kid) {
+      this.seo.setPage({ title: `${kid.name}'s Dashboard`, noIndex: true });
+      this.dashboard.set(await this.fs.getKidDashboard(kid.id));
+    }
   }
 }

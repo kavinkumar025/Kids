@@ -14,59 +14,93 @@ interface NavItem { path: string; label: string; icon: string; safeIcon?: SafeHt
   imports: [CommonModule, RouterLink, RouterLinkActive],
   host: { class: 'block' },
   template: `
-    <div class="min-h-screen flex" [style.background]="'linear-gradient(135deg, ' + theme().primary + '08, ' + theme().secondary + '05)'">
+    <div class="min-h-screen flex" style="background-color: var(--bg)">
       <!-- Desktop Sidebar -->
-      <aside class="hidden lg:flex flex-col w-[240px] border-r fixed h-full z-20 px-4 py-6"
+      <aside class="hidden lg:flex flex-col w-[260px] border-r fixed h-full z-20"
              style="border-color: var(--border); background-color: var(--bg-card)">
-        <div class="flex items-center gap-3 mb-8 px-2" data-testid="kid-sidebar-logo">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center" [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke-width="2"/><path d="M2 10h20" stroke-width="2"/></svg>
-          </div>
-          <div>
-            <h1 class="text-sm font-bold font-heading tracking-tight leading-tight">Kids Money</h1>
-            <p class="text-[10px] tracking-widest uppercase" style="color: var(--fg-muted)">Hi, {{ kidName() }}!</p>
+
+        <!-- Kid Brand Header -->
+        <div class="border-b" [style.border-color]="'var(--border)'" data-testid="kid-sidebar-logo">
+          <!-- Gradient top strip -->
+          <div class="px-5 pt-5 pb-4" [style.background]="'linear-gradient(160deg,' + theme().primary + '14 0%,' + theme().secondary + '08 100%)'">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-2xl flex items-center justify-center shadow-md flex-shrink-0"
+                   [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'"
+                   [style.box-shadow]="'0 4px 14px -3px ' + theme().primary + '60'">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke-width="1.5"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-width="1.5" stroke-linecap="round"/><path d="M9 9h.01M15 9h.01" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <h1 class="font-bold font-heading" style="font-size:1.0625rem;letter-spacing:-0.02em;line-height:1.2">Minyfin</h1>
+                <p class="text-[10px] font-semibold uppercase" [style.color]="theme().primary" style="letter-spacing:0.08em">My Space ✨</p>
+              </div>
+            </div>
+            <!-- Kid avatar card -->
+            <div class="rounded-2xl p-3 flex items-center gap-3" [style.background]="'rgba(255,255,255,0.5)'" style="border:1px solid rgba(0,0,0,0.06);backdrop-filter:blur(8px)">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm flex-shrink-0"
+                   [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'"
+                   [style.box-shadow]="'0 3px 10px -2px ' + theme().primary + '50'">
+                {{ kidName()[0] }}
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold leading-tight truncate" style="font-size:0.9375rem">{{ kidName() }}</p>
+                <p class="text-[10px] font-semibold" [style.color]="theme().primary">🚀 Kid Explorer</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <p class="text-[10px] uppercase tracking-widest mb-2 font-semibold px-3" style="color: var(--fg-muted)">Navigation</p>
-        <nav class="flex-1 space-y-0.5">
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
           @for (item of navItems; track item.path) {
-            <a [routerLink]="item.path" routerLinkActive="kid-active"
+            <a [routerLink]="item.path" routerLinkActive="kid-active" [routerLinkActiveOptions]="{exact: item.path.endsWith('/dashboard')}"
                [attr.data-testid]="'kid-nav-' + item.label.toLowerCase().replace(' ', '-')"
                class="kid-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all">
-              <span [innerHTML]="item.safeIcon" class="flex-shrink-0"></span>
+              <span [innerHTML]="item.safeIcon" class="flex-shrink-0 kid-icon"></span>
               {{ item.label }}
             </a>
           }
         </nav>
 
-        <button (click)="doLogout()" data-testid="kid-logout-btn"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all w-full text-left mt-auto" style="color:#EF4444">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Log Out
-        </button>
+        <!-- Logout -->
+        <div class="px-2.5 pb-4 pt-2 border-t" style="border-color:var(--border)">
+          <button (click)="doLogout()" data-testid="kid-logout-btn"
+                  class="kid-logout flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all w-full text-left">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Log Out
+          </button>
+        </div>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 lg:ml-[240px] pb-20 lg:pb-0">
+      <main class="flex-1 lg:ml-[260px] pb-20 lg:pb-0">
+        <!-- Themed Header -->
         <header class="sticky top-0 z-10 border-b px-4 lg:px-8 h-14 flex items-center justify-between"
-                style="background-color:color-mix(in srgb, var(--bg-card) 90%, transparent);backdrop-filter:blur(16px);border-color:var(--border)">
+                style="background-color:color-mix(in srgb, var(--bg-card) 95%, transparent);backdrop-filter:blur(20px);border-color:var(--border)">
           <div class="flex items-center gap-3">
-            <button class="lg:hidden p-2 rounded-xl" style="color:var(--fg)" (click)="mobileMenu = !mobileMenu" data-testid="kid-mobile-menu">
+            <button class="lg:hidden p-2 rounded-xl transition-colors" style="color:var(--fg)" (click)="mobileMenu = !mobileMenu" data-testid="kid-mobile-menu">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
-            <div class="hidden lg:flex items-center gap-2.5">
+            <!-- Mobile brand -->
+            <div class="lg:hidden flex items-center gap-2">
               <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
                    [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
                 {{ kidName()[0] }}
               </div>
+              <span class="text-sm font-bold font-heading">{{ kidName() }}'s Space</span>
+            </div>
+            <!-- Desktop greeting -->
+            <div class="hidden lg:flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+                   [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
+                {{ kidName()[0] }}
+              </div>
               <div>
-                <p class="text-xs font-semibold leading-tight">{{ kidName() }}</p>
-                <p class="text-[10px]" style="color:var(--fg-muted)">Kid Account</p>
+                <p class="text-xs font-bold leading-tight">Hi, {{ kidName() }}! 👋</p>
+                <p class="text-[10px]" style="color:var(--fg-muted)">Keep it up, superstar!</p>
               </div>
             </div>
           </div>
-          <button (click)="themeService.toggle()" class="p-2 rounded-xl transition-colors" style="color:var(--fg-muted)" data-testid="kid-theme-toggle">
+          <button (click)="themeService.toggle()" class="p-2 rounded-xl transition-colors kid-theme-btn" style="color:var(--fg-muted)" data-testid="kid-theme-toggle">
             @if (themeService.theme() === 'light') {
               <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke-width="2"/></svg>
             } @else {
@@ -80,20 +114,29 @@ interface NavItem { path: string; label: string; icon: string; safeIcon?: SafeHt
       <!-- Mobile Menu -->
       @if (mobileMenu) {
         <div class="fixed inset-0 z-30 lg:hidden" (click)="mobileMenu = false">
-          <div class="absolute inset-0 bg-black/50"></div>
-          <div class="absolute left-0 top-0 bottom-0 w-[270px] px-4 py-6 animate-fade-in"
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+          <div class="absolute left-0 top-0 bottom-0 w-[280px] flex flex-col animate-slide-in"
                style="background-color: var(--bg-card)" (click)="$event.stopPropagation()">
-            <div class="flex items-center gap-3 mb-8 px-2">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center" [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke-width="2"/></svg>
+            <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color:var(--border)">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl flex items-center justify-center text-white font-bold"
+                     [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
+                  {{ kidName()[0] }}
+                </div>
+                <div>
+                  <span class="text-sm font-bold font-heading">{{ kidName() }}</span>
+                  <p class="text-[10px]" [style.color]="theme().primary">Kid Explorer ✨</p>
+                </div>
               </div>
-              <span class="text-sm font-bold font-heading">Hi, {{ kidName() }}!</span>
+              <button (click)="mobileMenu = false" class="p-1.5 rounded-lg" style="color:var(--fg-muted)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
             </div>
-            <nav class="space-y-0.5">
+            <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
               @for (item of navItems; track item.path) {
                 <a [routerLink]="item.path" (click)="mobileMenu = false"
                    class="kid-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all">
-                  <span [innerHTML]="item.safeIcon"></span> {{ item.label }}
+                  <span [innerHTML]="item.safeIcon" class="flex-shrink-0 kid-icon"></span> {{ item.label }}
                 </a>
               }
             </nav>
@@ -101,14 +144,14 @@ interface NavItem { path: string; label: string; icon: string; safeIcon?: SafeHt
         </div>
       }
 
-      <!-- Mobile Bottom Nav -->
-      <nav class="lg:hidden fixed bottom-0 inset-x-0 z-20 border-t px-1 py-1.5 safe-area-bottom"
-           style="background-color:color-mix(in srgb, var(--bg-card) 92%, transparent);backdrop-filter:blur(16px);border-color:var(--border)">
-        <div class="flex items-center justify-around">
+      <!-- Mobile Bottom Nav - themed -->
+      <nav class="lg:hidden fixed bottom-0 inset-x-0 z-20 border-t safe-area-bottom"
+           style="background-color:color-mix(in srgb, var(--bg-card) 95%, transparent);backdrop-filter:blur(20px);border-color:var(--border)">
+        <div class="flex items-center justify-around px-1 py-1">
           @for (item of mobileNavItems; track item.path) {
             <a [routerLink]="item.path" routerLinkActive="kid-mob-active" [attr.data-testid]="'kid-mob-' + item.label.toLowerCase()"
-               class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all" style="color:var(--fg-muted)">
-              <span [innerHTML]="item.safeIcon"></span>
+               class="kid-mob-item flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-[52px]">
+              <span [innerHTML]="item.safeIcon" class="kid-mob-icon"></span>
               <span class="text-[10px] font-semibold">{{ item.label }}</span>
             </a>
           }
@@ -117,11 +160,25 @@ interface NavItem { path: string; label: string; icon: string; safeIcon?: SafeHt
     </div>
   `,
   styles: [`
-    .kid-nav-item { color: var(--fg-muted); }
+    .kid-nav-item { color: var(--fg-muted); transition: all 0.15s ease; position: relative; }
     .kid-nav-item:hover { color: var(--fg); background-color: var(--muted); }
-    .kid-active { background-color: var(--color-primary) !important; color: white !important; }
-    .kid-active :is(svg, span) { filter: brightness(10); }
-    .kid-mob-active { color: var(--color-primary) !important; }
+    .kid-nav-item:hover .kid-icon { opacity: 0.9 !important; }
+    .kid-icon { opacity: 0.65; transition: opacity 0.15s; }
+    .kid-active {
+      background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 14%, transparent) 0%, color-mix(in srgb, var(--color-primary) 5%, transparent) 100%) !important;
+      color: var(--color-primary) !important;
+      font-weight: 700;
+      box-shadow: inset 3px 0 0 var(--color-primary);
+    }
+    .kid-active .kid-icon { opacity: 1 !important; }
+    .kid-logout { color: var(--fg-muted); transition: all 0.15s ease; }
+    .kid-logout:hover { color: #EF4444; background-color: rgba(239,68,68,0.07); }
+    .kid-theme-btn:hover { background-color: var(--muted); border-radius: 0.75rem; }
+    .kid-mob-item { color: var(--fg-muted); transition: all 0.15s; }
+    .kid-mob-active { color: var(--color-primary) !important; font-weight: 700; }
+    .kid-mob-active .kid-mob-icon :deep(svg) { stroke: var(--color-primary) !important; }
+    @keyframes slide-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+    .animate-slide-in { animation: slide-in 0.22s cubic-bezier(0.16,1,0.3,1); }
   `]
 })
 export class KidLayoutComponent {

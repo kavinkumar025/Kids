@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { SIP } from '../models/interfaces';
 import { KID_THEMES } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-kid-sip',
@@ -13,11 +14,20 @@ import { KID_THEMES } from '../constants/app-data';
   template: `
     <app-kid-layout>
       <div class="animate-fade-in">
-        <h1 class="text-2xl font-bold font-heading tracking-tight mb-2" data-testid="kid-sip-heading">My Investments</h1>
-        <p class="text-sm mb-6" style="color: var(--fg-muted)">Watch your money grow!</p>
+        <div class="page-header-block">
+          <div>
+            <h1 class="page-title" data-testid="kid-sip-heading">My Investments</h1>
+            <p class="page-subtitle">Watch your money grow!</p>
+          </div>
+        </div>
 
         @if (sips().length === 0) {
-          <div class="card p-12 text-center"><p class="text-sm" style="color: var(--fg-muted)">No investments yet. Ask your parent to set one up!</p></div>
+          <div class="empty-state">
+            <div class="empty-icon" style="background:linear-gradient(135deg,#10B981,#059669)">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <p class="page-subtitle">No investments yet. Ask your parent to set one up!</p>
+          </div>
         }
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -45,10 +55,12 @@ import { KID_THEMES } from '../constants/app-data';
 export class KidSIPPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   sips = signal<SIP[]>([]);
   theme = computed(() => KID_THEMES[this.auth.kidSession()?.kid?.ui_theme || 'neutral'] || KID_THEMES['neutral']);
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'My Savings Plans', noIndex: true });
     const kid = this.auth.kidSession()?.kid;
     if (kid) this.sips.set(await this.fs.getSIPs(kid.id));
   }

@@ -4,6 +4,7 @@ import { KidLayoutComponent } from '../layouts/kid-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { KID_THEMES, getLevelForXp, LEVELS } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-kid-achievements',
@@ -12,8 +13,12 @@ import { KID_THEMES, getLevelForXp, LEVELS } from '../constants/app-data';
   template: `
     <app-kid-layout>
       <div class="animate-fade-in">
-        <h1 class="text-2xl font-bold font-heading tracking-tight mb-2" data-testid="kid-achievements-heading">Achievements</h1>
-        <p class="text-sm mb-6" style="color: var(--fg-muted)">Your badges and progress</p>
+        <div class="page-header-block">
+          <div>
+            <h1 class="page-title" data-testid="kid-achievements-heading">Achievements</h1>
+            <p class="page-subtitle">Your badges and progress</p>
+          </div>
+        </div>
 
         @if (data(); as d) {
           <!-- Level Progress -->
@@ -32,18 +37,21 @@ import { KID_THEMES, getLevelForXp, LEVELS } from '../constants/app-data';
           </div>
 
           <!-- Stats -->
-          <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading" [style.color]="theme().primary">{{ d.xp }}</p><p class="text-[10px]" style="color: var(--fg-muted)">Total XP</p></div>
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading" [style.color]="creditColor(d.credit_score)">{{ d.credit_score }}</p><p class="text-[10px]" style="color: var(--fg-muted)">Credit Score</p></div>
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading">{{ d.stats.tasks_completed }}</p><p class="text-[10px]" style="color: var(--fg-muted)">Tasks Done</p></div>
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading">{{ d.stats.stories_read }}</p><p class="text-[10px]" style="color: var(--fg-muted)">Stories Read</p></div>
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading">{{ d.stats.goals_achieved }}</p><p class="text-[10px]" style="color: var(--fg-muted)">Goals Done</p></div>
-            <div class="card p-4 text-center"><p class="text-xl font-bold font-heading">{{ d.stats.sip_payments }}</p><p class="text-[10px]" style="color: var(--fg-muted)">SIP Payments</p></div>
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+            <div class="stat-card text-center"><p class="stat-value" [style.color]="theme().primary">{{ d.xp }}</p><p class="stat-label">Total XP</p></div>
+            <div class="stat-card text-center"><p class="stat-value" [style.color]="creditColor(d.credit_score)">{{ d.credit_score }}</p><p class="stat-label">Credit Score</p></div>
+            <div class="stat-card text-center"><p class="stat-value">{{ d.stats.tasks_completed }}</p><p class="stat-label">Tasks Done</p></div>
+            <div class="stat-card text-center"><p class="stat-value">{{ d.stats.stories_read }}</p><p class="stat-label">Stories Read</p></div>
+            <div class="stat-card text-center"><p class="stat-value">{{ d.stats.goals_achieved }}</p><p class="stat-label">Goals Done</p></div>
+            <div class="stat-card text-center"><p class="stat-value">{{ d.stats.sip_payments }}</p><p class="stat-label">SIP Payments</p></div>
           </div>
 
           <!-- Badges -->
-          <div class="card p-6">
-            <h3 class="text-sm font-semibold font-heading mb-4">Badges Earned ({{ d.badges.length }})</h3>
+          <div class="card p-5">
+            <div class="section-header">
+              <h3 class="section-title">Badges Earned</h3>
+              <span class="badge badge-teal">{{ d.badges.length }}</span>
+            </div>
             @if (d.badges.length === 0) {
               <p class="text-sm text-center py-6" style="color: var(--fg-muted)">Complete tasks, read stories, and save to earn badges!</p>
             }
@@ -71,11 +79,13 @@ import { KID_THEMES, getLevelForXp, LEVELS } from '../constants/app-data';
 export class KidAchievementsPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   data = signal<any>(null);
   levels = LEVELS;
   theme = computed(() => KID_THEMES[this.auth.kidSession()?.kid?.ui_theme || 'neutral'] || KID_THEMES['neutral']);
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'Achievements', noIndex: true });
     const kid = this.auth.kidSession()?.kid;
     if (kid) this.data.set(await this.fs.getKidAchievements(kid.id));
   }

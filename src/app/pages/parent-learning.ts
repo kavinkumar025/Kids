@@ -4,6 +4,7 @@ import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { STORIES } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-parent-learning',
@@ -12,8 +13,12 @@ import { STORIES } from '../constants/app-data';
   template: `
     <app-parent-layout>
       <div class="animate-fade-in">
-        <h1 class="text-2xl font-bold font-heading tracking-tight mb-2" data-testid="learning-heading">Learning</h1>
-        <p class="text-sm mb-8" style="color: var(--fg-muted)">Financial stories and quizzes for {{ auth.selectedKid()?.name }}</p>
+        <div class="page-header-block">
+          <div>
+            <h1 class="page-title" data-testid="learning-heading">Learning</h1>
+            <p class="page-subtitle">Financial stories for {{ auth.selectedKid()?.name }}</p>
+          </div>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (story of stories; track story.id) {
@@ -38,8 +43,8 @@ import { STORIES } from '../constants/app-data';
         @if (selectedStory(); as story) {
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="selectedStory.set(null)">
             <div class="absolute inset-0 bg-black/50"></div>
-            <div class="card p-8 w-full max-w-lg relative z-10 max-h-[90vh] overflow-y-auto animate-fade-in" (click)="$event.stopPropagation()">
-              <h2 class="text-lg font-bold font-heading mb-4">{{ story.title }}</h2>
+            <div class="card p-6 w-full max-w-lg relative z-10 max-h-[90vh] overflow-y-auto animate-scale-in" (click)="$event.stopPropagation()">
+              <h2 class="section-title mb-4">{{ story.title }}</h2>
               <p class="text-sm leading-relaxed mb-6" style="color: var(--fg-muted)">{{ story.content }}</p>
 
               @if (!quizMode()) {
@@ -77,6 +82,7 @@ import { STORIES } from '../constants/app-data';
 export class ParentLearningPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   stories = STORIES;
   completedIds = signal<string[]>([]);
   selectedStory = signal<any>(null);
@@ -86,6 +92,7 @@ export class ParentLearningPage implements OnInit {
   answers: Record<number, number> = {};
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'Learning Centre', noIndex: true });
     const kid = this.auth.selectedKid();
     if (kid) {
       const progress = await this.fs.getLearningProgress(kid.id);

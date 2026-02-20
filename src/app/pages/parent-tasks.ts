@@ -1,37 +1,44 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { Task } from '../models/interfaces';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-parent-tasks',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule, ParentLayoutComponent],
+  imports: [CommonModule, FormsModule, ParentLayoutComponent],
   template: `
     <app-parent-layout>
       <div class="animate-fade-in">
-        <div class="flex items-center justify-between mb-8">
+        <div class="page-header-block">
           <div>
-            <h1 class="text-2xl font-bold font-heading tracking-tight" data-testid="tasks-heading">Tasks</h1>
-            <p class="text-sm mt-1" style="color: var(--fg-muted)">Manage tasks for {{ auth.selectedKid()?.name || 'your child' }}</p>
+            <h1 class="page-title" data-testid="tasks-heading">Tasks</h1>
+            <p class="page-subtitle">Manage tasks for {{ auth.selectedKid()?.name || 'your child' }}</p>
           </div>
-          <button (click)="showCreate.set(true)" class="btn-primary text-sm" data-testid="create-task-btn">+ New Task</button>
+          <button (click)="showCreate.set(true)" class="btn-primary" data-testid="create-task-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+            New Task
+          </button>
         </div>
 
         @if (!auth.selectedKid()) {
-          <div class="card p-12 text-center">
-            <p class="text-sm" style="color: var(--fg-muted)">Please add a child first from the Dashboard.</p>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4" stroke-width="2" stroke-linecap="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2"/></svg>
+            </div>
+            <p class="page-subtitle">Please add a child first from the Dashboard.</p>
           </div>
         } @else {
           <!-- Filter tabs -->
-          <div class="flex gap-2 mb-6">
+          <div class="filter-tabs">
             @for (f of filters; track f.value) {
               <button (click)="filter.set(f.value)"
-                      [ngClass]="filter() === f.value ? 'btn-primary text-xs px-4 py-2' : 'text-xs px-4 py-2 rounded-full border'"
-                      [style.border-color]="filter() !== f.value ? 'var(--border)' : ''"
+                      class="filter-tab"
+                      [class.active]="filter() === f.value"
                       [attr.data-testid]="'filter-' + f.value">
                 {{ f.label }}
               </button>
@@ -39,25 +46,29 @@ import { Task } from '../models/interfaces';
           </div>
 
           @if (filteredTasks().length === 0) {
-            <div class="card p-12 text-center">
-              <p class="text-sm" style="color: var(--fg-muted)">No tasks yet. Create one to get started!</p>
+            <div class="empty-state" style="margin-top:0">
+              <p class="page-subtitle">No tasks yet. Create one to get started!</p>
             </div>
           }
 
           <div class="space-y-3">
             @for (task of filteredTasks(); track task.id) {
-              <div class="card p-4 flex items-center justify-between" [attr.data-testid]="'task-' + task.id">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold">{{ task.title }}</span>
-                    <span class="badge text-[10px]" [style.background-color]="statusColor(task.status) + '15'" [style.color]="statusColor(task.status)">{{ task.status }}</span>
-                  </div>
-                  <p class="text-xs mt-1" style="color: var(--fg-muted)">{{ task.reward_amount }} coins &middot; {{ task.frequency }}</p>
+              <div class="task-card" [attr.data-testid]="'task-' + task.id">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color:rgba(13,148,136,0.10)">
+                  <svg class="w-4 h-4" style="color:#0D9488" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4" stroke-width="2" stroke-linecap="round"/></svg>
                 </div>
-                <div class="flex gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold font-heading">{{ task.title }}</span>
+                  </div>
+                  <p class="text-xs" style="color: var(--fg-muted)">{{ task.reward_amount }} coins &middot; {{ task.frequency }}</p>
+                </div>
+                <span class="badge flex-shrink-0"
+                      [style.background-color]="statusColor(task.status) + '18'" [style.color]="statusColor(task.status)">{{ task.status }}</span>
+                <div class="flex gap-2 flex-shrink-0">
                   @if (task.status === 'completed') {
-                    <button (click)="approve(task.id)" class="text-xs px-3 py-1.5 rounded-full bg-green-500 text-white font-medium" [attr.data-testid]="'approve-' + task.id">Approve</button>
-                    <button (click)="reject(task.id)" class="text-xs px-3 py-1.5 rounded-full bg-red-500 text-white font-medium" [attr.data-testid]="'reject-' + task.id">Reject</button>
+                    <button (click)="approve(task.id)" class="text-xs px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-semibold" [attr.data-testid]="'approve-' + task.id">Approve</button>
+                    <button (click)="reject(task.id)" class="text-xs px-3 py-1.5 rounded-xl text-white font-semibold" style="background:#EF4444" [attr.data-testid]="'reject-' + task.id">Reject</button>
                   }
                 </div>
               </div>
@@ -69,8 +80,13 @@ import { Task } from '../models/interfaces';
         @if (showCreate()) {
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="showCreate.set(false)">
             <div class="absolute inset-0 bg-black/50"></div>
-            <div class="card p-8 w-full max-w-md relative z-10 animate-fade-in" (click)="$event.stopPropagation()">
-              <h2 class="text-lg font-bold font-heading mb-6">Create Task</h2>
+            <div class="card p-6 w-full max-w-md relative z-10 animate-scale-in" (click)="$event.stopPropagation()">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h2 class="section-title">Create Task</h2>
+                  <p class="text-xs mt-0.5" style="color:var(--fg-muted)">Set up a task and reward</p>
+                </div>
+              </div>
               <form (ngSubmit)="createTask()" class="space-y-4">
                 <div>
                   <label class="label">Title</label>
@@ -116,6 +132,7 @@ import { Task } from '../models/interfaces';
 export class ParentTasksPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
 
   tasks = signal<Task[]>([]);
   filter = signal('all');
@@ -134,6 +151,7 @@ export class ParentTasksPage implements OnInit {
   filteredTasks = signal<Task[]>([]);
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'Tasks', noIndex: true });
     await this.loadTasks();
   }
 

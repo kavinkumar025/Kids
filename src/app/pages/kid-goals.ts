@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { Goal } from '../models/interfaces';
 import { KID_THEMES } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-kid-goals',
@@ -14,21 +15,36 @@ import { KID_THEMES } from '../constants/app-data';
   template: `
     <app-kid-layout>
       <div class="animate-fade-in">
-        <h1 class="text-2xl font-bold font-heading tracking-tight mb-2" data-testid="kid-goals-heading">My Goals</h1>
-        <p class="text-sm mb-6" style="color: var(--fg-muted)">Save towards your dreams!</p>
+        <div class="page-header-block">
+          <div>
+            <h1 class="page-title" data-testid="kid-goals-heading">My Goals</h1>
+            <p class="page-subtitle">Save towards your dreams!</p>
+          </div>
+        </div>
 
         @if (goals().length === 0) {
-          <div class="card p-12 text-center"><p class="text-sm" style="color: var(--fg-muted)">No goals yet. Ask your parent to set one up!</p></div>
+          <div class="empty-state">
+            <div class="empty-icon" [style.background]="'linear-gradient(135deg,' + theme().primary + ',' + theme().secondary + ')'">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/><circle cx="12" cy="12" r="2" stroke-width="2"/></svg>
+            </div>
+            <p class="page-subtitle">No goals yet. Ask your parent to set one up!</p>
+          </div>
         }
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (goal of goals(); track goal.id) {
-            <div class="card p-6" [attr.data-testid]="'kid-goal-' + goal.id">
-              <h3 class="font-semibold font-heading mb-3">{{ goal.title }}</h3>
-              <div class="w-full rounded-full h-3 mb-2" style="background-color: var(--muted)">
-                <div class="h-3 rounded-full transition-all" [style.width.%]="(goal.saved_amount / goal.target_amount) * 100" [style.background-color]="theme().primary"></div>
+            <div class="card p-5" [attr.data-testid]="'kid-goal-' + goal.id">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold font-heading" style="font-size:1rem">{{ goal.title }}</h3>
+                <span class="badge" [class.badge-success]="goal.status === 'completed'" [class.badge-warning]="goal.status !== 'completed'">{{ goal.status }}</span>
               </div>
-              <p class="text-xs mb-3" style="color: var(--fg-muted)">{{ goal.saved_amount }} / {{ goal.target_amount }} coins</p>
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span style="color:var(--fg-muted)">{{ goal.saved_amount }} / {{ goal.target_amount }}</span>
+                <span class="font-bold" [style.color]="theme().primary">{{ ((goal.saved_amount / goal.target_amount) * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="w-full rounded-full h-2.5 mb-4" style="background-color: var(--muted)">
+                <div class="h-2.5 rounded-full transition-all" [style.width.%]="(goal.saved_amount / goal.target_amount) * 100" [style.background-color]="theme().primary"></div>
+              </div>
               @if (goal.status === 'active') {
                 <div class="flex gap-2">
                   <input class="input flex-1" type="number" min="1" placeholder="Amount" [(ngModel)]="amounts[goal.id]" [attr.data-testid]="'kid-contribute-input-' + goal.id">
@@ -47,11 +63,13 @@ import { KID_THEMES } from '../constants/app-data';
 export class KidGoalsPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   goals = signal<Goal[]>([]);
   amounts: Record<string, number> = {};
   theme = computed(() => KID_THEMES[this.auth.kidSession()?.kid?.ui_theme || 'neutral'] || KID_THEMES['neutral']);
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'My Goals', noIndex: true });
     const kid = this.auth.kidSession()?.kid;
     if (kid) this.goals.set(await this.fs.getGoals(kid.id));
   }

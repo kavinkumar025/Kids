@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { Loan } from '../models/interfaces';
 import { KID_THEMES } from '../constants/app-data';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-kid-loans',
@@ -13,11 +14,20 @@ import { KID_THEMES } from '../constants/app-data';
   template: `
     <app-kid-layout>
       <div class="animate-fade-in">
-        <h1 class="text-2xl font-bold font-heading tracking-tight mb-2" data-testid="kid-loans-heading">My Loans</h1>
-        <p class="text-sm mb-6" style="color: var(--fg-muted)">Manage your borrowings responsibly</p>
+        <div class="page-header-block">
+          <div>
+            <h1 class="page-title" data-testid="kid-loans-heading">My Loans</h1>
+            <p class="page-subtitle">Manage your borrowings responsibly</p>
+          </div>
+        </div>
 
         @if (loans().length === 0) {
-          <div class="card p-12 text-center"><p class="text-sm" style="color: var(--fg-muted)">No loans yet. That's great!</p></div>
+          <div class="empty-state">
+            <div class="empty-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706)">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4l3 3" stroke-width="2"/></svg>
+            </div>
+            <p class="page-subtitle">No loans yet &mdash; that's great!</p>
+          </div>
         }
 
         <div class="space-y-4">
@@ -49,10 +59,12 @@ import { KID_THEMES } from '../constants/app-data';
 export class KidLoansPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   loans = signal<Loan[]>([]);
   theme = computed(() => KID_THEMES[this.auth.kidSession()?.kid?.ui_theme || 'neutral'] || KID_THEMES['neutral']);
 
   async ngOnInit() {
+    this.seo.setPage({ title: 'My Loans', noIndex: true });
     const kid = this.auth.kidSession()?.kid;
     if (kid) this.loans.set(await this.fs.getLoans(kid.id));
   }

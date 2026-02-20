@@ -131,6 +131,7 @@ export class AuthService {
 
   async logout() {
     localStorage.removeItem('km_kid_session');
+    sessionStorage.removeItem('km_admin_auth');
     this.role.set(null);
     this.parentProfile.set(null);
     this.kidSession.set(null);

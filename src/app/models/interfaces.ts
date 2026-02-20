@@ -108,3 +108,23 @@ export interface KidSession {
   wallet: Wallet;
   isKid: true;
 }
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  text: string;
+  bg: string;
+  approved: boolean;
+  source: 'admin' | 'user';
+  created_at: string;
+}
+
+export interface FaqItem {
+  id: string;
+  q: string;
+  a: string;
+  order: number;
+  active: boolean;
+  created_at: string;
+}

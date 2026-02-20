@@ -5,6 +5,7 @@ import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { Loan } from '../models/interfaces';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-parent-loans',
@@ -13,16 +14,24 @@ import { Loan } from '../models/interfaces';
   template: `
     <app-parent-layout>
       <div class="animate-fade-in">
-        <div class="flex items-center justify-between mb-8">
+        <div class="page-header-block">
           <div>
-            <h1 class="text-2xl font-bold font-heading tracking-tight" data-testid="loans-heading">Loans & EMI</h1>
-            <p class="text-sm mt-1" style="color: var(--fg-muted)">Manage loans for {{ auth.selectedKid()?.name }}</p>
+            <h1 class="page-title" data-testid="loans-heading">Loans &amp; EMI</h1>
+            <p class="page-subtitle">Manage loans for {{ auth.selectedKid()?.name }}</p>
           </div>
-          <button (click)="showCreate.set(true)" class="btn-primary text-sm" data-testid="create-loan-btn">+ Request Loan</button>
+          <button (click)="showCreate.set(true)" class="btn-primary" data-testid="create-loan-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+            Request Loan
+          </button>
         </div>
 
         @if (loans().length === 0) {
-          <div class="card p-12 text-center"><p class="text-sm" style="color: var(--fg-muted)">No loans yet.</p></div>
+          <div class="empty-state">
+            <div class="empty-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706)">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/><line x1="2" y1="10" x2="22" y2="10" stroke-width="2"/></svg>
+            </div>
+            <p class="page-subtitle">No loans yet. Create a loan for your child to learn borrowing.</p>
+          </div>
         }
 
         <div class="space-y-4">
@@ -57,8 +66,10 @@ import { Loan } from '../models/interfaces';
         @if (showCreate()) {
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="showCreate.set(false)">
             <div class="absolute inset-0 bg-black/50"></div>
-            <div class="card p-8 w-full max-w-md relative z-10 animate-fade-in" (click)="$event.stopPropagation()">
-              <h2 class="text-lg font-bold font-heading mb-6">Request Loan</h2>
+            <div class="card p-6 w-full max-w-md relative z-10 animate-scale-in" (click)="$event.stopPropagation()">
+              <div class="flex items-center justify-between mb-5">
+                <div><h2 class="section-title">Create Loan</h2><p class="text-xs mt-0.5" style="color:var(--fg-muted)">Define purpose and terms</p></div>
+              </div>
               <form (ngSubmit)="createLoan()" class="space-y-4">
                 <div><label class="label">Purpose</label><input class="input" placeholder="e.g., Buy a bicycle" [(ngModel)]="loanForm.purpose" name="purpose" data-testid="loan-purpose-input"></div>
                 <div><label class="label">Amount</label><input class="input" type="number" min="10" [(ngModel)]="loanForm.principal" name="principal" data-testid="loan-amount-input"></div>
@@ -78,12 +89,13 @@ import { Loan } from '../models/interfaces';
 export class ParentLoansPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   loans = signal<Loan[]>([]);
   showCreate = signal(false);
   creating = signal(false);
   loanForm = { purpose: '', principal: 100, interest_rate: 5, duration_months: 6 };
 
-  async ngOnInit() { await this.load(); }
+  async ngOnInit() { this.seo.setPage({ title: 'Loans', noIndex: true }); await this.load(); }
   async load() { const kid = this.auth.selectedKid(); if (kid) this.loans.set(await this.fs.getLoans(kid.id)); }
   loanColor(s: string) { return { pending: '#FCD34D', active: '#4F7DF3', completed: '#34D399' }[s] || '#71717A'; }
 

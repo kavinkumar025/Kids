@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { parentGuard, kidGuard, publicGuard } from './guards/auth.guard';
+import { parentGuard, kidGuard, publicGuard, adminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/landing').then(m => m.LandingPage), canActivate: [publicGuard] },
@@ -13,6 +13,7 @@ export const routes: Routes = [
   { path: 'loans', loadComponent: () => import('./pages/parent-loans').then(m => m.ParentLoansPage), canActivate: [parentGuard] },
   { path: 'learning', loadComponent: () => import('./pages/parent-learning').then(m => m.ParentLearningPage), canActivate: [parentGuard] },
   { path: 'settings', loadComponent: () => import('./pages/parent-settings').then(m => m.ParentSettingsPage), canActivate: [parentGuard] },
+  { path: 'admin', loadComponent: () => import('./pages/admin').then(m => m.AdminPage), canActivate: [adminGuard] },
   { path: 'kid/dashboard', loadComponent: () => import('./pages/kid-home').then(m => m.KidHomePage), canActivate: [kidGuard] },
   { path: 'kid/tasks', loadComponent: () => import('./pages/kid-tasks').then(m => m.KidTasksPage), canActivate: [kidGuard] },
   { path: 'kid/wallet', loadComponent: () => import('./pages/kid-wallet').then(m => m.KidWalletPage), canActivate: [kidGuard] },

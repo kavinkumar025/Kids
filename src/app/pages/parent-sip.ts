@@ -5,6 +5,7 @@ import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { SIP } from '../models/interfaces';
+import { SeoService } from '../services/seo.service';
 
 @Component({
   selector: 'app-parent-sip',
@@ -13,16 +14,24 @@ import { SIP } from '../models/interfaces';
   template: `
     <app-parent-layout>
       <div class="animate-fade-in">
-        <div class="flex items-center justify-between mb-8">
+        <div class="page-header-block">
           <div>
-            <h1 class="text-2xl font-bold font-heading tracking-tight" data-testid="sip-heading">SIP Investments</h1>
-            <p class="text-sm mt-1" style="color: var(--fg-muted)">Systematic Investment Plans for {{ auth.selectedKid()?.name }}</p>
+            <h1 class="page-title" data-testid="sip-heading">Savings Plans</h1>
+            <p class="page-subtitle">Systematic Investment Plans for {{ auth.selectedKid()?.name }}</p>
           </div>
-          <button (click)="showCreate.set(true)" class="btn-primary text-sm" data-testid="create-sip-btn">+ New SIP</button>
+          <button (click)="showCreate.set(true)" class="btn-primary" data-testid="create-sip-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+            New SIP
+          </button>
         </div>
 
         @if (sips().length === 0) {
-          <div class="card p-12 text-center"><p class="text-sm" style="color: var(--fg-muted)">No SIPs yet. Create one to start investing!</p></div>
+          <div class="empty-state">
+            <div class="empty-icon" style="background:linear-gradient(135deg,#10B981,#059669)">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <p class="page-subtitle">No savings plans yet. Create one to start growing coins!</p>
+          </div>
         }
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -53,8 +62,10 @@ import { SIP } from '../models/interfaces';
         @if (showCreate()) {
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="showCreate.set(false)">
             <div class="absolute inset-0 bg-black/50"></div>
-            <div class="card p-8 w-full max-w-md relative z-10 animate-fade-in" (click)="$event.stopPropagation()">
-              <h2 class="text-lg font-bold font-heading mb-6">Create SIP</h2>
+            <div class="card p-6 w-full max-w-md relative z-10 animate-scale-in" (click)="$event.stopPropagation()">
+              <div class="flex items-center justify-between mb-5">
+                <div><h2 class="section-title">Create Savings Plan</h2><p class="text-xs mt-0.5" style="color:var(--fg-muted)">Set amount and frequency</p></div>
+              </div>
               <form (ngSubmit)="createSIP()" class="space-y-4">
                 <div><label class="label">Amount per installment</label><input class="input" type="number" min="1" [(ngModel)]="sipForm.amount" name="amount" data-testid="sip-amount-input"></div>
                 <div><label class="label">Interest Rate (%)</label><input class="input" type="number" min="0" max="20" [(ngModel)]="sipForm.interest_rate" name="rate" data-testid="sip-rate-input"></div>
@@ -77,12 +88,13 @@ import { SIP } from '../models/interfaces';
 export class ParentSIPPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
+  private seo = inject(SeoService);
   sips = signal<SIP[]>([]);
   showCreate = signal(false);
   creating = signal(false);
   sipForm = { amount: 10, interest_rate: 8, frequency: 'monthly' };
 
-  async ngOnInit() { await this.load(); }
+  async ngOnInit() { this.seo.setPage({ title: 'Savings Plans (SIP)', noIndex: true }); await this.load(); }
   async load() { const kid = this.auth.selectedKid(); if (kid) this.sips.set(await this.fs.getSIPs(kid.id)); }
 
   async createSIP() {
