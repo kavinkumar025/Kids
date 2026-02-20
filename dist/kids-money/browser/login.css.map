@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["login.ts"],
-  "sourcesContent": ["\n    .tab-active   { flex:1; padding:0.5rem; border-radius:9999px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; background-color:var(--bg-card); color:var(--fg); cursor:pointer; border:none; box-shadow:0 1px 4px rgba(0,0,0,0.10); font-family:var(--font-heading); }\n    .tab-inactive { flex:1; padding:0.5rem; border-radius:9999px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.4rem; background:transparent; color:var(--fg-muted); cursor:pointer; border:none; font-family:var(--font-heading); }\n  "],
-  "mappings": ";AACI,CAAA;AAAgB,QAAA;AAAQ,WAAA;AAAgB,iBAAA;AAAsB,aAAA;AAAoB,eAAA;AAAiB,WAAA;AAAc,eAAA;AAAoB,mBAAA;AAAwB,OAAA;AAAY,oBAAA,IAAA;AAAiC,SAAA,IAAA;AAAiB,UAAA;AAAgB,UAAA;AAAa,cAAA,EAAA,IAAA,IAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AAAuC,eAAA,IAAA;AAAiC;AAChU,CAAA;AAAgB,QAAA;AAAQ,WAAA;AAAgB,iBAAA;AAAsB,aAAA;AAAoB,eAAA;AAAiB,WAAA;AAAc,eAAA;AAAoB,mBAAA;AAAwB,OAAA;AAAY,cAAA;AAAwB,SAAA,IAAA;AAAuB,UAAA;AAAgB,UAAA;AAAa,eAAA,IAAA;AAAiC;",
-  "names": []
-}

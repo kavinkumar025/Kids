@@ -6,10 +6,10 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <div class="min-h-screen mesh-gradient">
+    <div class="min-h-screen mesh-gradient overflow-x-hidden">
 
       <!-- â”€â”€ Navbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-      <header class="fixed top-0 inset-x-0 z-50 glass" data-testid="landing-nav">
+      <header class="sticky top-0 inset-x-0 z-50 glass" data-testid="landing-nav">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a routerLink="/" class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg,#0D9488,#14B8A6)">
@@ -25,7 +25,7 @@ import { RouterLink } from '@angular/router';
       </header>
 
       <!-- â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-      <section style="padding-top: 64px">
+      <section>
         <div class="max-w-6xl mx-auto px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
 
           <!-- Left: copy -->
@@ -125,7 +125,7 @@ import { RouterLink } from '@angular/router';
               </div>
 
               <!-- Floating XP badge -->
-              <div class="absolute -top-4 -right-4 card-widget px-3.5 py-2.5 rounded-2xl z-20 animate-fade-up stagger-3" style="box-shadow:var(--shadow-float)">
+              <div class="absolute top-3 right-3 card-widget px-3.5 py-2.5 rounded-2xl z-20 animate-fade-up stagger-3" style="box-shadow:var(--shadow-float)">
                 <div class="flex items-center gap-2">
                   <span class="text-lg">⭐</span>
                   <div>
@@ -136,7 +136,7 @@ import { RouterLink } from '@angular/router';
               </div>
 
               <!-- Floating credit score -->
-              <div class="absolute -bottom-4 -left-5 card-widget px-3.5 py-2.5 rounded-2xl z-20 animate-fade-up stagger-4" style="box-shadow:var(--shadow-float)">
+              <div class="absolute bottom-3 left-3 card-widget px-3.5 py-2.5 rounded-2xl z-20 animate-fade-up stagger-4" style="box-shadow:var(--shadow-float)">
                 <p class="text-[10px] font-medium" style="color:var(--fg-muted)">Credit Score</p>
                 <p class="text-xl font-extrabold font-heading" style="color:#10B981">750</p>
               </div>
