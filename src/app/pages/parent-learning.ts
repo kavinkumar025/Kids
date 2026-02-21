@@ -4,6 +4,7 @@ import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { STORIES } from '../constants/app-data';
+import { Story } from '../models/interfaces';
 import { SeoService } from '../services/seo.service';
 
 @Component({
@@ -20,8 +21,13 @@ import { SeoService } from '../services/seo.service';
           </div>
         </div>
 
+        @if (storiesLoading()) {
+          <div class="flex justify-center py-8">
+            <div class="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style="border-color:#0D9488;border-top-color:transparent"></div>
+          </div>
+        } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          @for (story of stories; track story.id) {
+          @for (story of stories(); track story.id) {
             <div class="card p-6 cursor-pointer transition-all hover:scale-[1.02]" (click)="selectedStory.set(story)" [attr.data-testid]="'story-' + story.id">
               <div class="flex items-center gap-3 mb-3">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent)">
@@ -39,6 +45,7 @@ import { SeoService } from '../services/seo.service';
             </div>
           }
         </div>
+        }
 
         @if (selectedStory(); as story) {
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="selectedStory.set(null)">
@@ -83,9 +90,10 @@ export class ParentLearningPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
   private seo = inject(SeoService);
-  stories = STORIES;
+  stories = signal<Story[]>([]);
+  storiesLoading = signal(true);
   completedIds = signal<string[]>([]);
-  selectedStory = signal<any>(null);
+  selectedStory = signal<Story | null>(null);
   quizMode = signal(false);
   submitting = signal(false);
   quizResult = signal<number | null>(null);
@@ -93,6 +101,7 @@ export class ParentLearningPage implements OnInit {
 
   async ngOnInit() {
     this.seo.setPage({ title: 'Learning Centre', noIndex: true });
+    await this.loadStories();
     const kid = this.auth.selectedKid();
     if (kid) {
       const progress = await this.fs.getLearningProgress(kid.id);
@@ -100,9 +109,22 @@ export class ParentLearningPage implements OnInit {
     }
   }
 
+  private async loadStories() {
+    this.storiesLoading.set(true);
+    try {
+      await this.fs.seedStoriesIfEmpty(STORIES);
+      const data = await this.fs.getStories(true);
+      this.stories.set(data);
+    } catch {
+      this.stories.set(STORIES as any);
+    } finally {
+      this.storiesLoading.set(false);
+    }
+  }
+
   isCompleted(id: string) { return this.completedIds().includes(id); }
 
-  async submitQuiz(story: any) {
+  async submitQuiz(story: Story) {
     const kid = this.auth.selectedKid();
     if (!kid) return;
     this.submitting.set(true);

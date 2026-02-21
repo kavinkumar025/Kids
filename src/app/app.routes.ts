@@ -3,6 +3,8 @@ import { parentGuard, kidGuard, publicGuard, adminGuard } from './guards/auth.gu
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/landing').then(m => m.LandingPage), canActivate: [publicGuard] },
+  { path: 'about', loadComponent: () => import('./pages/about').then(m => m.AboutPage) },
+  { path: 'review', loadComponent: () => import('./pages/share-review').then(m => m.ShareReviewPage), canActivate: [parentGuard] },
   { path: 'login', loadComponent: () => import('./pages/login').then(m => m.LoginPage), canActivate: [publicGuard] },
   { path: 'signup', loadComponent: () => import('./pages/signup').then(m => m.SignupPage), canActivate: [publicGuard] },
   { path: 'dashboard', loadComponent: () => import('./pages/parent-dashboard').then(m => m.ParentDashboardPage), canActivate: [parentGuard] },

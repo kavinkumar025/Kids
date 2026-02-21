@@ -1,6 +1,7 @@
 ﻿import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ParentLayoutComponent } from '../layouts/parent-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
@@ -11,7 +12,7 @@ import { SeoService } from '../services/seo.service';
 @Component({
   selector: 'app-parent-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ParentLayoutComponent],
+  imports: [CommonModule, FormsModule, ParentLayoutComponent, RouterLink],
   template: `
     <app-parent-layout>
       <div class="animate-fade-in">
@@ -187,37 +188,14 @@ import { SeoService } from '../services/seo.service';
           }
         }
 
-        <div class="card p-5 mb-6 max-w-2xl">
-          <h3 class="section-title mb-1">Share your experience</h3>
-          <p class="text-sm mb-4" style="color:var(--fg-muted)">Your review helps other families discover Minyfin.</p>
-
-          @if (reviewSubmitted()) {
-            <div class="rounded-xl p-4" style="background:rgba(13,148,136,0.08)">
-              <p class="text-sm font-semibold" style="color:#0D9488">Thank you for your review.</p>
-              <p class="text-xs" style="color:var(--fg-muted)">Your review is submitted and will be visible after admin approval.</p>
-            </div>
-          } @else {
-            <form (ngSubmit)="submitParentReview()" class="space-y-3">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Your name *</label>
-                  <input class="input" placeholder="e.g. Priya Sharma" [(ngModel)]="parentReview.name" name="parentReviewName" required>
-                </div>
-                <div>
-                  <label class="label">Role *</label>
-                  <input class="input" placeholder="e.g. Parent of 2" [(ngModel)]="parentReview.role" name="parentReviewRole" required>
-                </div>
-              </div>
-              <div>
-                <label class="label">Your review *</label>
-                <textarea class="input" rows="4" placeholder="Tell us how Minyfin has helped your family…" [(ngModel)]="parentReview.text" name="parentReviewText" required></textarea>
-              </div>
-              @if (reviewError()) {
-                <p class="text-xs" style="color:#EF4444">{{ reviewError() }}</p>
-              }
-              <button type="submit" class="btn-teal" [disabled]="reviewSubmitting()">{{ reviewSubmitting() ? 'Submitting...' : 'Submit Review' }}</button>
-            </form>
-          }
+        <div class="card p-5 mb-6 max-w-2xl flex items-center justify-between gap-4">
+          <div>
+            <h3 class="section-title mb-1">Share your experience</h3>
+            <p class="text-sm" style="color:var(--fg-muted)">Your review helps other families discover Minyfin.</p>
+          </div>
+          <a routerLink="/review" class="btn-teal flex-shrink-0 !px-5 !py-2.5 !text-sm">
+            Write a Review
+          </a>
         </div>
 
         <!-- Add Kid Modal -->
@@ -310,9 +288,6 @@ export class ParentDashboardPage implements OnInit {
   addingKid = signal(false);
   wallets = signal<Record<string, any>>({});
   selectedDashboard = signal<any>(null);
-  reviewSubmitting = signal(false);
-  reviewSubmitted = signal(false);
-  reviewError = signal('');
   avatars = AVATARS;
   getAvatarColor = getAvatarColor;
 
@@ -323,7 +298,6 @@ export class ParentDashboardPage implements OnInit {
   ];
 
   kidForm = { name: '', age: 8, grade: '', avatar: 'panda', ui_theme: 'neutral', pin: '', starting_balance: 0 };
-  parentReview = { name: '', role: '', text: '' };
 
   async ngOnInit() {
     this.seo.setPage({ title: 'Parent Dashboard', noIndex: true });
@@ -377,24 +351,5 @@ export class ParentDashboardPage implements OnInit {
   async rejectTask(taskId: string) {
     await this.fs.rejectTask(taskId);
     await this.loadData();
-  }
-
-  async submitParentReview() {
-    if (!this.parentReview.name.trim() || !this.parentReview.role.trim() || !this.parentReview.text.trim()) return;
-    this.reviewSubmitting.set(true);
-    this.reviewError.set('');
-    try {
-      await this.fs.submitUserReview({
-        name: this.parentReview.name.trim(),
-        role: this.parentReview.role.trim(),
-        text: this.parentReview.text.trim(),
-      });
-      this.parentReview = { name: '', role: '', text: '' };
-      this.reviewSubmitted.set(true);
-    } catch {
-      this.reviewError.set('Failed to submit review. Please try again.');
-    } finally {
-      this.reviewSubmitting.set(false);
-    }
   }
 }

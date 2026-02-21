@@ -128,3 +128,32 @@ export interface FaqItem {
   active: boolean;
   created_at: string;
 }
+
+export interface StoryQuestion {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  reward_xp: number;
+  order: number;
+  active: boolean;
+  questions: StoryQuestion[];
+  created_at: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+  read: boolean;
+}

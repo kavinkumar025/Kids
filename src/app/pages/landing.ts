@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../services/seo.service';
 import { FirestoreService } from '../services/firestore.service';
-import { Testimonial, FaqItem } from '../models/interfaces';
+import { Testimonial } from '../models/interfaces';
 
 @Component({
   selector: 'app-landing',
@@ -22,6 +22,7 @@ import { Testimonial, FaqItem } from '../models/interfaces';
             <span class="font-bold font-heading text-base tracking-tight">Minyfin</span>
           </a>
           <nav class="flex items-center gap-1.5">
+            <a routerLink="/about" class="text-sm font-semibold px-4 py-2 rounded-full transition-colors" style="color:var(--fg-muted)">About</a>
             <a routerLink="/login" class="text-sm font-semibold px-4 py-2 rounded-full transition-colors" style="color:var(--fg-muted)" data-testid="landing-login-btn">Sign In</a>
             <a routerLink="/signup" class="btn-teal !py-2 !px-5 !text-sm" data-testid="landing-signup-btn">Get Started</a>
           </nav>
@@ -296,41 +297,6 @@ import { Testimonial, FaqItem } from '../models/interfaces';
         </div>
       </section>
 
-      <!-- FAQ -->
-      <section class="py-16 lg:py-24 px-5">
-        <div class="max-w-3xl mx-auto">
-          <div class="text-center mb-12">
-            <p class="text-xs font-bold font-heading uppercase tracking-widest mb-3" style="color:#0D9488">Questions answered</p>
-            <h2 class="text-3xl lg:text-4xl font-bold font-heading tracking-tight">Frequently asked</h2>
-          </div>
-          @if (faqsLoading()) {
-            <div class="flex justify-center py-8">
-              <div class="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style="border-color:#0D9488;border-top-color:transparent"></div>
-            </div>
-          } @else if (faqs().length === 0) {
-            <div class="card-widget p-6 rounded-2xl text-center" style="color:var(--fg-muted)">
-              FAQs will appear here once added by admin.
-            </div>
-          } @else {
-            <div class="space-y-3">
-              @for (faq of faqs(); track faq.id) {
-                <div class="card-widget p-5 rounded-2xl">
-                  <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(13,148,136,0.12)">
-                      <svg class="w-3 h-3" style="color:#0D9488" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    <div>
-                      <p class="font-semibold font-heading text-sm mb-1.5">{{ faq.q }}</p>
-                      <p class="text-sm leading-relaxed" style="color:var(--fg-muted)">{{ faq.a }}</p>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </section>
-
       <!-- CTA -->
       <section class="py-16 lg:py-24 px-5" style="background:var(--surface)">
         <div class="max-w-3xl mx-auto text-center">
@@ -390,9 +356,7 @@ export class LandingPage implements OnInit {
 
   // Dynamic data
   testimonials = signal<Testimonial[]>([]);
-  faqs = signal<FaqItem[]>([]);
   testimonialsLoading = signal(true);
-  faqsLoading = signal(true);
 
   async ngOnInit() {
     this.seo.setPage({
@@ -400,7 +364,6 @@ export class LandingPage implements OnInit {
       description: 'Parents assign tasks. Kids complete them to earn virtual coins. Build saving habits, learn investing basics, and develop financial discipline — free for families, no real money involved.'
     });
     this.loadTestimonials();
-    this.loadFaqs();
   }
 
   private async loadTestimonials() {
@@ -412,18 +375,6 @@ export class LandingPage implements OnInit {
       this.testimonials.set([]);
     } finally {
       this.testimonialsLoading.set(false);
-    }
-  }
-
-  private async loadFaqs() {
-    this.faqsLoading.set(true);
-    try {
-      const data = await this.fs.getFaqs(true);
-      this.faqs.set(data);
-    } catch {
-      this.faqs.set([]);
-    } finally {
-      this.faqsLoading.set(false);
     }
   }
 
@@ -470,5 +421,6 @@ export class LandingPage implements OnInit {
   footerLinks = [
     { label: 'Sign In', path: '/login' },
     { label: 'Sign Up', path: '/signup' },
+    { label: 'About', path: '/about' },
   ];
 }

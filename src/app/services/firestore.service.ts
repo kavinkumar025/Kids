@@ -3,7 +3,7 @@ import {
   Firestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
   query, where, orderBy, limit, addDoc, increment
 } from '@angular/fire/firestore';
-import { Kid, Wallet, Transaction, Task, Goal, SIP, Loan, LearningProgress, Testimonial, FaqItem } from '../models/interfaces';
+import { Kid, Wallet, Transaction, Task, Goal, SIP, Loan, LearningProgress, Testimonial, FaqItem, ContactMessage, Story } from '../models/interfaces';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
@@ -426,5 +426,60 @@ export class FirestoreService {
     const avatarColors = ['#3B82F6', '#10B981', '#A855F7', '#F97316', '#EC4899', '#F59E0B'];
     const bg = avatarColors[Math.floor(Math.random() * avatarColors.length)];
     await this.addTestimonial({ name: data.name, role: data.role, text: data.text, bg, approved: false, source: 'user' });
+  }
+
+  // ====== CONTACT MESSAGES ======
+  async submitContactMessage(data: Omit<ContactMessage, 'id' | 'created_at' | 'read'>): Promise<void> {
+    const msg: ContactMessage = {
+      ...data,
+      id: uuidv4(),
+      created_at: new Date().toISOString(),
+      read: false
+    };
+    await setDoc(doc(this.fs, 'contact_messages', msg.id), msg);
+  }
+
+  async getContactMessages(): Promise<ContactMessage[]> {
+    const snap = await getDocs(collection(this.fs, 'contact_messages'));
+    return snap.docs.map(d => d.data() as ContactMessage)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  async markContactRead(id: string) {
+    await updateDoc(doc(this.fs, 'contact_messages', id), { read: true });
+  }
+
+  // ====== STORIES ======
+  async getStories(activeOnly = false): Promise<Story[]> {
+    const snap = await getDocs(collection(this.fs, 'stories'));
+    const all = snap.docs.map(d => d.data() as Story);
+    const filtered = activeOnly ? all.filter(s => s.active !== false) : all;
+    return filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  async addStory(data: Omit<Story, 'id' | 'created_at'>): Promise<Story> {
+    const s: Story = { ...data, id: uuidv4(), created_at: new Date().toISOString() };
+    await setDoc(doc(this.fs, 'stories', s.id), s);
+    return s;
+  }
+
+  async updateStory(id: string, data: Partial<Story>) {
+    await updateDoc(doc(this.fs, 'stories', id), data as any);
+  }
+
+  async deleteStory(id: string) {
+    await deleteDoc(doc(this.fs, 'stories', id));
+  }
+
+  async seedStoriesIfEmpty(staticStories: any[]): Promise<void> {
+    const snap = await getDocs(collection(this.fs, 'stories'));
+    if (snap.empty) {
+      for (let i = 0; i < staticStories.length; i++) {
+        const s = staticStories[i];
+        await setDoc(doc(this.fs, 'stories', s.id), {
+          ...s, order: i + 1, active: true, created_at: new Date().toISOString()
+        });
+      }
+    }
   }
 }

@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../services/seo.service';
 import { FirestoreService } from '../services/firestore.service';
-import { FaqItem, Testimonial } from '../models/interfaces';
+import { STORIES } from '../constants/app-data';
+import { FaqItem, Testimonial, Story } from '../models/interfaces';
 
 @Component({
   selector: 'app-admin',
@@ -29,8 +30,15 @@ import { FaqItem, Testimonial } from '../models/interfaces';
         </div>
 
         <div class="card p-2 mb-4 inline-flex gap-2">
-          <button class="px-4 py-2 rounded-lg text-sm font-semibold" style="background:rgba(13,148,136,0.12);color:#0D9488">
-            Template
+          <button (click)="activeTab.set('content')" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  [style.background]="activeTab() === 'content' ? 'rgba(13,148,136,0.12)' : 'transparent'"
+                  [style.color]="activeTab() === 'content' ? '#0D9488' : 'var(--fg-muted)'">
+            Content
+          </button>
+          <button (click)="activeTab.set('stories')" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  [style.background]="activeTab() === 'stories' ? 'rgba(13,148,136,0.12)' : 'transparent'"
+                  [style.color]="activeTab() === 'stories' ? '#0D9488' : 'var(--fg-muted)'">
+            Stories
           </button>
         </div>
 
@@ -39,6 +47,9 @@ import { FaqItem, Testimonial } from '../models/interfaces';
             <p class="text-sm" style="color:#EF4444">{{ error() }}</p>
           </div>
         }
+
+        <!-- ── Content Tab (Testimonials + FAQs) ── -->
+        @if (activeTab() === 'content') {
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
           <div class="card p-5">
@@ -125,6 +136,91 @@ import { FaqItem, Testimonial } from '../models/interfaces';
             </div>
           </div>
         </div>
+        } <!-- end content tab -->
+
+        <!-- ── Stories Tab ── -->
+        @if (activeTab() === 'stories') {
+          <div class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="section-title">Learning Stories</h3>
+                <p class="text-xs mt-0.5" style="color:var(--fg-muted)">Manage financial stories shown in the Learning section.</p>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn-ghost !py-2 !px-3 !text-xs" (click)="seedDefaultStories()" [disabled]="saving()">Seed defaults</button>
+                <button class="btn-ghost !py-2 !px-3 !text-xs" (click)="loadData()" [disabled]="loading()">Refresh</button>
+              </div>
+            </div>
+
+            <!-- Add Story Form -->
+            <div class="rounded-xl p-4 mb-5" style="background:var(--muted)">
+              <h4 class="text-sm font-semibold font-heading mb-3">Add New Story</h4>
+              <form class="space-y-3" (ngSubmit)="addStory()">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input [(ngModel)]="newStory.title" name="s_title" required class="input" placeholder="Story title" />
+                  <input [(ngModel)]="newStory.category" name="s_cat" required class="input" placeholder="Category (basics, saving, etc.)" />
+                </div>
+                <input [(ngModel)]="newStory.description" name="s_desc" required class="input" placeholder="Short description" />
+                <textarea [(ngModel)]="newStory.content" name="s_content" required rows="4" class="input" placeholder="Full story content..."></textarea>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <input [(ngModel)]="newStory.reward_xp" name="s_xp" type="number" min="1" class="input" placeholder="XP reward" />
+                  <input [(ngModel)]="newStory.order" name="s_order" type="number" min="1" class="input" placeholder="Display order" />
+                  <label class="flex items-center gap-2 text-xs" style="color:var(--fg-muted)">
+                    <input type="checkbox" [(ngModel)]="newStory.active" name="s_active" /> Active
+                  </label>
+                </div>
+                <div>
+                  <label class="label">Questions (JSON array)</label>
+                  <textarea [(ngModel)]="newStoryQuestionsJson" name="s_questions" rows="6" class="input font-mono text-xs"
+                            placeholder='[{"question":"Q?","options":["A","B","C","D"],"correct":0}]'></textarea>
+                  <p class="text-[11px] mt-1" style="color:var(--fg-muted)">Each question: question, options[4], correct (0-indexed)</p>
+                </div>
+                <button class="btn-teal !py-2 !px-4 !text-sm" [disabled]="saving()">Add Story</button>
+              </form>
+            </div>
+
+            <!-- Stories list -->
+            <div class="space-y-3 max-h-[600px] overflow-auto pr-1">
+              @for (item of stories(); track item.id) {
+                <div class="rounded-xl p-4" style="background:var(--muted)">
+                  <div class="grid grid-cols-1 gap-2 mb-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input [(ngModel)]="item.title" [name]="'st_'+item.id" class="input" placeholder="Title" />
+                      <input [(ngModel)]="item.category" [name]="'sc_'+item.id" class="input" placeholder="Category" />
+                    </div>
+                    <input [(ngModel)]="item.description" [name]="'sd_'+item.id" class="input" placeholder="Description" />
+                    <textarea [(ngModel)]="item.content" [name]="'scnt_'+item.id" rows="3" class="input" placeholder="Content"></textarea>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs" style="color:var(--fg-muted)">XP</span>
+                        <input [(ngModel)]="item.reward_xp" [name]="'sx_'+item.id" type="number" class="input !w-16 !py-1 !px-2 !text-xs" />
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs" style="color:var(--fg-muted)">#</span>
+                        <input [(ngModel)]="item.order" [name]="'so_'+item.id" type="number" class="input !w-14 !py-1 !px-2 !text-xs" />
+                      </div>
+                      <label class="text-xs flex items-center gap-1" style="color:var(--fg-muted)">
+                        <input type="checkbox" [(ngModel)]="item.active" [name]="'sa_'+item.id" /> Active
+                      </label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <button class="btn-ghost !py-1.5 !px-3 !text-xs" (click)="saveStory(item)">Save</button>
+                      <button class="btn-ghost !py-1.5 !px-3 !text-xs" style="color:#EF4444" (click)="deleteStory(item.id)">Delete</button>
+                    </div>
+                  </div>
+                  <p class="text-[10px] mt-2" style="color:var(--fg-muted)">{{ item.questions.length || 0 }} questions · {{ item.category }}</p>
+                </div>
+              }
+              @if (stories().length === 0) {
+                <div class="text-center py-8" style="color:var(--fg-muted)">
+                  <p class="text-sm">No stories yet. Click "Seed defaults" to populate the default stories.</p>
+                </div>
+              }
+            </div>
+          </div>
+        } <!-- end stories tab -->
       </div>
     </div>
   `
@@ -136,12 +232,16 @@ export class AdminPage implements OnInit {
   loading = signal(false);
   saving = signal(false);
   error = signal('');
+  activeTab = signal<'content' | 'stories'>('content');
 
   testimonials = signal<Testimonial[]>([]);
   faqs = signal<FaqItem[]>([]);
+  stories = signal<Story[]>([]);
 
   newTestimonial = { name: '', role: '', text: '', approved: true };
   newFaq = { q: '', a: '', order: 1, active: true };
+  newStory = { title: '', description: '', content: '', category: '', reward_xp: 25, order: 1, active: true };
+  newStoryQuestionsJson = '';
 
   async ngOnInit() {
     this.seo.setPage({ title: 'Admin Template', noIndex: true });
@@ -152,14 +252,16 @@ export class AdminPage implements OnInit {
     this.loading.set(true);
     this.error.set('');
     try {
-      const [testimonials, faqs] = await Promise.all([
+      const [testimonials, faqs, stories] = await Promise.all([
         this.fs.getTestimonials(false),
-        this.fs.getFaqs(false)
+        this.fs.getFaqs(false),
+        this.fs.getStories(false)
       ]);
       this.testimonials.set(testimonials);
       this.faqs.set(faqs);
+      this.stories.set(stories);
     } catch {
-      this.error.set('Failed to load admin template data.');
+      this.error.set('Failed to load admin data.');
     } finally {
       this.loading.set(false);
     }
@@ -264,6 +366,82 @@ export class AdminPage implements OnInit {
       await this.loadData();
     } catch {
       this.error.set('Failed to delete FAQ.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async addStory() {
+    if (!this.newStory.title.trim() || !this.newStory.content.trim()) return;
+    this.saving.set(true);
+    this.error.set('');
+    try {
+      let questions = [];
+      if (this.newStoryQuestionsJson.trim()) {
+        questions = JSON.parse(this.newStoryQuestionsJson);
+      }
+      await this.fs.addStory({
+        title: this.newStory.title.trim(),
+        description: this.newStory.description.trim(),
+        content: this.newStory.content.trim(),
+        category: this.newStory.category.trim() || 'general',
+        reward_xp: Number(this.newStory.reward_xp) || 25,
+        order: Number(this.newStory.order) || 1,
+        active: this.newStory.active,
+        questions
+      });
+      this.newStory = { title: '', description: '', content: '', category: '', reward_xp: 25, order: 1, active: true };
+      this.newStoryQuestionsJson = '';
+      await this.loadData();
+    } catch (e: any) {
+      this.error.set('Failed to add story. Check JSON format for questions.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async saveStory(item: Story) {
+    this.saving.set(true);
+    this.error.set('');
+    try {
+      await this.fs.updateStory(item.id, {
+        title: item.title.trim(),
+        description: item.description.trim(),
+        content: item.content.trim(),
+        category: item.category.trim(),
+        reward_xp: Number(item.reward_xp) || 25,
+        order: Number(item.order) || 1,
+        active: item.active
+      });
+      await this.loadData();
+    } catch {
+      this.error.set('Failed to save story.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async deleteStory(id: string) {
+    this.saving.set(true);
+    this.error.set('');
+    try {
+      await this.fs.deleteStory(id);
+      await this.loadData();
+    } catch {
+      this.error.set('Failed to delete story.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async seedDefaultStories() {
+    this.saving.set(true);
+    this.error.set('');
+    try {
+      await this.fs.seedStoriesIfEmpty(STORIES);
+      await this.loadData();
+    } catch {
+      this.error.set('Failed to seed stories.');
     } finally {
       this.saving.set(false);
     }

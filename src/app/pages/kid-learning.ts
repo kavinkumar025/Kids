@@ -4,6 +4,7 @@ import { KidLayoutComponent } from '../layouts/kid-layout';
 import { AuthService } from '../services/auth.service';
 import { FirestoreService } from '../services/firestore.service';
 import { STORIES, KID_THEMES } from '../constants/app-data';
+import { Story } from '../models/interfaces';
 import { SeoService } from '../services/seo.service';
 
 @Component({
@@ -21,7 +22,12 @@ import { SeoService } from '../services/seo.service';
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          @for (story of stories; track story.id) {
+          @if (storiesLoading()) {
+            <div class="col-span-2 flex justify-center py-8">
+              <div class="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" [style.border-color]="theme().primary" style="border-top-color:transparent"></div>
+            </div>
+          } @else {
+          @for (story of stories(); track story.id) {
             <div class="card p-6 cursor-pointer transition-all hover:scale-[1.02]" (click)="openStory(story)" [attr.data-testid]="'kid-story-' + story.id">
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-semibold font-heading text-sm">{{ story.title }}</h3>
@@ -33,6 +39,7 @@ import { SeoService } from '../services/seo.service';
               </div>
               <p class="text-xs" style="color: var(--fg-muted)">{{ story.description }}</p>
             </div>
+          }
           }
         </div>
 
@@ -80,9 +87,10 @@ export class KidLearningPage implements OnInit {
   auth = inject(AuthService);
   private fs = inject(FirestoreService);
   private seo = inject(SeoService);
-  stories = STORIES;
+  stories = signal<Story[]>([]);
+  storiesLoading = signal(true);
   completedIds = signal<string[]>([]);
-  selectedStory = signal<any>(null);
+  selectedStory = signal<Story | null>(null);
   quizMode = signal(false);
   submitting = signal(false);
   quizResult = signal<number | null>(null);
@@ -91,6 +99,7 @@ export class KidLearningPage implements OnInit {
 
   async ngOnInit() {
     this.seo.setPage({ title: 'Learning Zone', noIndex: true });
+    await this.loadStories();
     const kid = this.auth.kidSession()?.kid;
     if (kid) {
       const progress = await this.fs.getLearningProgress(kid.id);
@@ -98,16 +107,28 @@ export class KidLearningPage implements OnInit {
     }
   }
 
+  private async loadStories() {
+    this.storiesLoading.set(true);
+    try {
+      const data = await this.fs.getStories(true);
+      this.stories.set(data.length > 0 ? data : (STORIES as any[]) as Story[]);
+    } catch {
+      this.stories.set((STORIES as any[]) as Story[]);
+    } finally {
+      this.storiesLoading.set(false);
+    }
+  }
+
   isCompleted(id: string) { return this.completedIds().includes(id); }
 
-  openStory(story: any) {
+  openStory(story: Story) {
     this.selectedStory.set(story);
     this.quizMode.set(false);
     this.quizResult.set(null);
     this.answers = {};
   }
 
-  async submitQuiz(story: any) {
+  async submitQuiz(story: Story) {
     const kid = this.auth.kidSession()?.kid;
     if (!kid) return;
     this.submitting.set(true);
